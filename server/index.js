@@ -1,6 +1,9 @@
 import { Nuxt, Builder } from 'nuxt'
 import fastify from 'fastify'
 import config from '../nuxt.config'
+import mediaRouter from './api/media'
+import metadataRouter from './api/metadata'
+import postRouter from './api/post'
 
 const app = fastify({
   logger: {
@@ -27,6 +30,10 @@ async function start() {
   }
 
   app.use(nuxt.render)
+
+  app.register(mediaRouter, { prefix: '/api/media' })
+  app.register(metadataRouter, { prefix: '/api/metadata' })
+  app.register(postRouter, { prefix: '/api/post' })
 
   app.listen(port, host, (err) => {
     if (err) {
