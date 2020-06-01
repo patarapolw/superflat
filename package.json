@@ -1,0 +1,34 @@
+{
+  "name": "superflat",
+  "version": "1.0.0",
+  "description": "Flat file CMS generator and manager",
+  "author": "Pacharapol Withayasakpunt",
+  "private": true,
+  "scripts": {
+    "dev": "cross-env NODE_ENV=development nodemon -r esm server/index.js --watch server",
+    "build": "nuxt build",
+    "start": "cross-env NODE_ENV=production node -r esm server/index.js",
+    "generate": "nuxt generate",
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
+  },
+  "dependencies": {
+    "@nuxtjs/axios": "^5.3.6",
+    "cross-env": "^5.2.0",
+    "esm": "^3.2.25",
+    "fastify": "^2.14.1",
+    "nuxt": "^2.0.0",
+    "pino-pretty": "^4.0.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.9",
+    "@nuxt/typescript-build": "^0.6.0",
+    "@nuxtjs/eslint-config-typescript": "^1.0.0",
+    "@nuxtjs/eslint-module": "^1.0.0",
+    "babel-eslint": "^10.0.1",
+    "eslint": "^6.1.0",
+    "eslint-plugin-nuxt": ">=0.4.2",
+    "eslint-config-prettier": "^6.10.0",
+    "eslint-plugin-prettier": "^3.1.2",
+    "prettier": "^1.19.1"
+  }
+}
