@@ -3,7 +3,6 @@
 // @ts-ignore
 import { Nuxt, Builder } from 'nuxt'
 import fastify from 'fastify'
-import pino from 'pino'
 import config from '../nuxt.config'
 import mediaRouter from './api/media'
 import metadataRouter from './api/metadata'
@@ -27,11 +26,13 @@ async function start() {
     await builder.build()
   }
 
-  const logger = pino({
-    prettyPrint: true
+  const app = fastify({
+    logger: {
+      prettyPrint: true,
+      level: 'warn'
+    }
   })
 
-  const app = fastify()
   app.use((req, res, next) => {
     if (req.url && !req.url.startsWith('/api')) {
       nuxt.render(req, res, next)
@@ -40,20 +41,26 @@ async function start() {
     next()
   })
 
-  app.register((f, _, next) => {
-    f.log = logger
+  app.register(
+    (f, _, next) => {
+      f.register(mediaRouter, { prefix: '/media' })
+      f.register(metadataRouter, { prefix: '/metadata' })
+      f.register(postRouter, { prefix: '/post' })
 
-    app.register(mediaRouter, { prefix: '/api/media' })
-    app.register(metadataRouter, { prefix: '/api/metadata' })
-    app.register(postRouter, { prefix: '/api/post' })
+      next()
+    },
+    {
+      logLevel: 'info',
+      prefix: '/api'
+    }
+  )
 
-    next()
-  })
-
-  app.listen(port, host, (err) => {
+  app.listen(port, host, (err, addr) => {
     if (err) {
       app.log.error(err)
       process.exit(1)
+    } else {
+      app.log.warn(`Please go to ${addr}`)
     }
   })
 }
