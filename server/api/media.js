@@ -1,27 +1,42 @@
 // @ts-check
 
-import { FastifyInstance } from 'fastify'
+import path from 'path'
 // @ts-ignore
 import fileUpload from 'fastify-file-upload'
 import dayjs from 'dayjs'
 import fs from 'fs-extra'
+import { FILEPATH } from '../shared'
 
 /**
  *
- * @param {FastifyInstance} f
+ * @param {import('fastify').FastifyInstance} f
  * @param {any} _
  * @param {Function} next
  */
 export default (f, _, next) => {
-  f.get('/*', async (req, reply) => {
-    const p = req.params[0]
-    if (p && fs.existsSync(`out/${p}`)) {
-      reply.send(fs.createReadStream(`out/${p}`, 'utf8'))
-      return
-    }
+  f.get(
+    '/',
+    {
+      schema: {
+        querystring: {
+          type: 'object',
+          required: ['q'],
+          properties: {
+            q: { type: 'string' }
+          }
+        }
+      }
+    },
+    async (req, reply) => {
+      const { q } = req.query
+      if (fs.existsSync(q)) {
+        reply.send(fs.createReadStream(q))
+        return
+      }
 
-    reply.status(404).send()
-  })
+      reply.status(404).send()
+    }
+  )
 
   f.register(fileUpload)
 
@@ -29,32 +44,16 @@ export default (f, _, next) => {
     '/upload',
     {
       schema: {
-        querystring: {
-          type: 'object',
-          required: ['slug'],
-          properties: {
-            slug: { type: 'string' }
-          }
-        },
         body: {
           type: 'object',
           required: ['file'],
           properties: {
             file: { type: 'object' }
           }
-        },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              filename: { type: 'string' }
-            }
-          }
         }
       }
     },
     async (req) => {
-      const { slug } = req.query
       const { file } = req.body
 
       let filename = file.name
@@ -65,7 +64,7 @@ export default (f, _, next) => {
       filename = (() => {
         const originalFilename = filename
 
-        while (fs.existsSync(`out/${slug}/${filename}`)) {
+        while (fs.existsSync(path.join(FILEPATH, filename))) {
           const [base, ext] = originalFilename.split(/(\.[a-z]+)$/i)
           filename =
             base +
@@ -79,11 +78,12 @@ export default (f, _, next) => {
         return filename
       })()
 
-      file.mv(`out/${slug}/${filename}`)
+      fs.mkdirpSync(FILEPATH)
+      file.mv(path.join(FILEPATH, filename))
 
       return {
         filename,
-        url: `/api/media/${slug}/${filename}`
+        url: `/api/media?q=${encodeURIComponent(path.join(FILEPATH, filename))}`
       }
     }
   )

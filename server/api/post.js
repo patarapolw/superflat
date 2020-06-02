@@ -1,98 +1,53 @@
 // @ts-check
 
-import { FastifyInstance } from 'fastify'
-import Slugify from 'seo-friendly-slugify'
+import path from 'path'
 import fs from 'fs-extra'
+import { FILEPATH } from '../shared'
 
 /**
  *
- * @param {FastifyInstance} f
+ * @param {import('fastify').FastifyInstance} f
  * @param {any} _
  * @param {Function} next
  */
 const handler = (f, _, next) => {
-  const slugify = new Slugify()
-
-  f.get(
-    '/',
-    {
-      schema: {
-        querystring: {
-          type: 'object',
-          required: ['slug'],
-          properties: {
-            slug: { type: 'string' }
-          }
-        }
-      }
-    },
-    async (req) => {
-      const { slug } = req.query
-      const filename = `out/${slug}/content.md`
-      return {
-        data: fs.existsSync(filename) ? fs.readFileSync(filename, 'utf-8') : ''
-      }
+  f.get('/', async () => {
+    const filename = path.join(FILEPATH, 'content.md')
+    return {
+      data: fs.existsSync(filename) ? fs.readFileSync(filename, 'utf-8') : ''
     }
-  )
+  })
 
   f.put(
     '/',
     {
       schema: {
-        querystring: {
-          type: 'object',
-          properties: {
-            slug: { type: 'string' }
-          }
-        },
         body: {
           type: 'object',
           required: ['data'],
           properties: {
-            slug: { type: 'string' },
-            title: { type: 'string' },
             data: { type: 'string' }
-          }
-        },
-        response: {
-          200: {
-            type: 'object',
-            properties: {
-              slug: { type: 'string' }
-            }
           }
         }
       }
     },
-    async (req) => {
-      const { slug } = req.query
-      // eslint-disable-next-line prefer-const
-      let { slug: newSlug, title, data } = req.body
+    async (req, reply) => {
+      const { data } = req.body
+      const filename = path.join(FILEPATH, 'content.md')
 
-      if (slug) {
-        const filename = `out/${slug}/content.md`
-        if (fs.existsSync(filename)) {
-          fs.writeFileSync(filename, data)
+      // console.log(path.resolve(filename))
 
-          return { slug }
-        }
+      if (fs.existsSync(path.resolve(filename))) {
+        fs.writeFileSync(filename, data)
+
+        reply.status(201).send()
+        return
       }
 
-      newSlug =
-        newSlug ||
-        slug ||
-        `${(() => {
-          const s = title ? slugify.slugify(title) : ''
-          return s ? `${s}-` : ''
-        })()}${Math.random()
-          .toString(36)
-          .substr(2)}`
+      fs.ensureFileSync(path.resolve(filename))
+      fs.writeFileSync(path.resolve(filename), data)
 
-      const filename = `out/${newSlug}/content.md`
-      fs.ensureFileSync(filename)
-      fs.writeFileSync(filename, data)
-
-      return { slug: newSlug }
+      reply.status(201).send()
     }
   )
 

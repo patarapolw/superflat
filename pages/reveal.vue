@@ -7,12 +7,12 @@ div(style="width: 100vw; height: 100vh")
 
 <script lang="ts">
 import { Vue, Component } from 'nuxt-property-decorator'
-import { RevealMd } from '~/assets/reveal'
+import { loadReveal } from '~/assets/reveal'
 
 @Component
 export default class RevealView extends Vue {
   mounted() {
-    window.revealMd = new RevealMd(process.env.PLACEHOLDER || '')
+    loadReveal()
   }
 }
 </script>

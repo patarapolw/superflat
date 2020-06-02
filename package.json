@@ -8,11 +8,10 @@
     "dev": "cross-env NODE_ENV=development nodemon -r esm server/index.js --watch server",
     "build": "nuxt build",
     "start": "cross-env NODE_ENV=production node -r esm server/index.js",
-    "generate": "nuxt generate",
-    "lint": "eslint --ext .js,.vue --ignore-path .gitignore ."
+    "lint": "eslint --ext .js,.vue --ignore-path .gitignore .",
+    "clean": "git clean -xdf out"
   },
   "dependencies": {
-    "@nuxtjs/axios": "^5.3.6",
     "cross-env": "^5.2.0",
     "dayjs": "^1.8.28",
     "domino": "^2.1.5",
@@ -23,8 +22,9 @@
     "node-fetch": "^2.6.0",
     "nuxt": "^2.0.0",
     "page-metadata-parser": "^1.1.4",
+    "pino": "^6.3.1",
     "pino-pretty": "^4.0.0",
-    "seo-friendly-slugify": "^1.0.5"
+    "zod": "^1.6.1"
   },
   "devDependencies": {
     "@nuxt/typescript-build": "^0.6.0",
@@ -36,7 +36,8 @@
     "@types/highlight.js": "^9.12.4",
     "@types/js-yaml": "^3.12.4",
     "@types/markdown-it": "^10.0.1",
-    "ajv": "^6.12.2",
+    "@types/node-fetch": "^2.5.7",
+    "@types/pino": "^6.0.1",
     "any-serialize": "^1.4.12",
     "babel-eslint": "^10.0.1",
     "codemirror": "^5.54.0",
@@ -66,5 +67,8 @@
     "stylis": "^3.5.4",
     "sweetalert2": "^9.14.0",
     "vue-codemirror": "^4.0.6"
+  },
+  "engines": {
+    "node": "12.x"
   }
 }

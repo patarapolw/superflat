@@ -1,11 +1,14 @@
-import { FastifyInstance } from 'fastify'
-import axios from 'axios'
+// @ts-check
+
+import fetch from 'node-fetch'
 import domino from 'domino'
+// @ts-ignore
 import { getMetadata } from 'page-metadata-parser'
 
 /**
  *
- * @param {FastifyInstance} f
+ * @param {import('fastify').FastifyInstance} f
+ * @param {any} _
  * @param {Function} next
  */
 const handler = (f, _, next) => {
@@ -13,8 +16,6 @@ const handler = (f, _, next) => {
     '/',
     {
       schema: {
-        summary: 'Get page metadata',
-        tags: ['lib'],
         querystring: {
           type: 'object',
           required: ['url'],
@@ -26,11 +27,8 @@ const handler = (f, _, next) => {
     },
     async (req) => {
       const { url } = req.query
-      const r = await axios.get(url, {
-        transformResponse: (d) => d
-      })
-
-      const doc = domino.createWindow(r.data).document
+      const r = await fetch(url).then((r) => r.text())
+      const doc = domino.createWindow(r).document
       return getMetadata(doc, url)
     }
   )

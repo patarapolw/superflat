@@ -21,17 +21,19 @@ export class Matter {
   header = {} as any
 
   parse(s: string) {
-    const m = /^---\n(.*?)\n---\n(.*)$/s.exec(s)
-    if (m) {
+    if (s.startsWith('---\n')) {
+      const [h, c = ''] = s.substr(3).split(/\n---(\n.*)?$/s)
+
       try {
-        this.header = yaml.safeLoad(m[1], {
-          schema: yaml.JSON_SCHEMA
-        })
+        this.header =
+          yaml.safeLoad(h, {
+            schema: yaml.JSON_SCHEMA
+          }) || {}
       } catch (_) {}
 
       return {
         header: this.header,
-        content: m[2]
+        content: c
       }
     }
 

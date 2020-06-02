@@ -12,8 +12,8 @@
       span {{isRemainingShown ? 'Hide' : 'Show'}} remaining
       div(style="flex-grow: 1;")
       span
-        fontawesome(icon="caret-down" v-if="isRemainingShown")
-        fontawesome(icon="caret-right" v-else)
+        span(v-if="isRemainingShown") ▲
+        span(v-else) ▼
     .unreset(v-show="isRemainingShown" ref="remaining" style="margin: 1em;")
 </template>
 
@@ -21,17 +21,17 @@
 import { Vue, Component, Prop, Watch } from 'nuxt-property-decorator'
 
 import MakeHtml from '../assets/make-html'
-import { Matter } from '../assets/utils'
+import { Matter } from '../assets/util'
 
 @Component
 export default class EditorPreview extends Vue {
   @Prop({ required: true }) title!: string
   @Prop({ required: true }) markdown!: string
-  @Prop() id?: string
   @Prop({ default: 0 }) scrollSize!: number
 
-  guid?: string = ''
-  image?: string = ''
+  guid = Math.random()
+    .toString(36)
+    .substr(2)
 
   isRemainingShown = true
   hasRemaining = false
@@ -40,33 +40,26 @@ export default class EditorPreview extends Vue {
   makeFront = this.makeHtml('front')
   makeBack = this.makeHtml('back')
 
+  get image() {
+    return this.matter.header.image
+  }
+
   makeHtml(side: 'front' | 'back') {
-    return new MakeHtml(this.guid + '-' + side, { ghHeading: true })
+    return new MakeHtml(this.guid + '-' + side)
   }
 
   mounted() {
-    this.onIdChanged()
     this.onMarkdownChanged()
-  }
-
-  @Watch('id')
-  onIdChanged() {
-    this.guid =
-      this.id ||
-      Math.random()
-        .toString(36)
-        .substr(2)
   }
 
   @Watch('markdown')
   async onMarkdownChanged() {
     const { excerpt, remaining } = this.$refs as any
-    const { header, content: md } = this.matter.parse(this.markdown)
-    this.image = header.image
+    const { content: md } = this.matter.parse(this.markdown)
 
     // @ts-ignore
     const [excerptMd, remainingMd = ''] = md.split(
-      process.env.VUE_APP_MATTER_EXCERPT_SEPARATOR!
+      '\n<!-- excerpt_separator -->\n'
     )
 
     await Promise.all([

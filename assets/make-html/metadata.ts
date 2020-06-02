@@ -1,5 +1,3 @@
-import axios from 'axios'
-
 export interface IMetadata {
   description?: string
   icon: string

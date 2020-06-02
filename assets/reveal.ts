@@ -1,5 +1,4 @@
 /// <reference path="./reveal.d.ts" />
-import axios from 'axios'
 import { Matter, ser } from './util'
 import MakeHtml from './make-html'
 
@@ -11,21 +10,15 @@ declare global {
   }
 }
 
-export class RevealMd {
+class RevealMd {
   _headers: RevealOptions | null = null
   _queue: Array<(r?: RevealStatic) => void> = []
   _markdown: string = ''
   _raw: Element[][] = [[]]
 
-  defaults = {
-    reveal: {
-      slideNumber: true,
-      hash: true
-    }
-  }
-
   cdn = 'https://cdn.jsdelivr.net/npm/reveal.js@3.9.2/'
   matter = new Matter()
+  _header = {}
 
   constructor(placeholder: string) {
     window.revealMd = this
@@ -61,9 +54,7 @@ export class RevealMd {
       })
     )
 
-    const { header, content } = this.matter.parse(placeholder)
-
-    this.headers = header || {}
+    const { content } = this.matter.parse(placeholder)
     this.markdown = content
 
     const currentSlide = location.hash
@@ -75,26 +66,24 @@ export class RevealMd {
     })
   }
 
-  get headers(): RevealOptions & {
+  get header(): RevealOptions & {
     theme?: string
     title?: string
     type?: 'reveal'
     js?: string[]
     css?: string[]
   } {
-    return this._headers || this.defaults.reveal
+    return this.matter.header
   }
 
-  set headers(h) {
+  set header(h) {
     // eslint-disable-next-line prefer-const
     let { theme, title, js, css, ...subH } = h
 
     this.theme = theme || 'white'
     this.title = title || ''
 
-    subH = Object.assign(JSON.parse(JSON.stringify(this.defaults.reveal)), subH)
-
-    if (ser.stringify(this._headers) === ser.stringify(subH)) {
+    if (ser.stringify(this._header) === ser.stringify(subH)) {
       return
     }
 
@@ -157,7 +146,7 @@ export class RevealMd {
 
   set markdown(s: string) {
     const { header, content } = this.matter.parse(s)
-    this.headers = header || this.headers
+    this.header = header || this.header
 
     const newRaw = content
       .split('\n===\n')
@@ -252,7 +241,7 @@ export class RevealMd {
   update(raw: string) {
     const { header, content } = this.matter.parse(raw)
     this.markdown = content
-    this.headers = header || {}
+    this.header = header || {}
   }
 
   onReady(fn?: (reveal?: RevealStatic) => void) {
@@ -317,17 +306,7 @@ export class RevealMd {
   }
 }
 
-export async function load() {
-  const u = new URL(location.href)
-  const slug = u.searchParams.get('slug')
-  let placeholder = ''
-
-  if (slug) {
-    const { data } = await fetch(
-      `/api/post?slug=${encodeURIComponent(slug)}`
-    ).then((r) => r.json())
-    placeholder = data
-  }
-
-  window.revealMd = new RevealMd(placeholder)
+export async function loadReveal() {
+  const { data } = await fetch('/api/post').then((r) => r.json())
+  window.revealMd = new RevealMd(data)
 }
