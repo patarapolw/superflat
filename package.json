@@ -20,7 +20,7 @@
     "fastify-file-upload": "^2.0.1",
     "fs-extra": "^9.0.0",
     "node-fetch": "^2.6.0",
-    "nuxt": "^2.0.0",
+    "nuxt": "^2.13.3",
     "page-metadata-parser": "^1.1.4",
     "pino": "^6.3.1",
     "pino-pretty": "^4.0.0",
