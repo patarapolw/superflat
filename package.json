@@ -24,7 +24,7 @@
     "page-metadata-parser": "^1.1.4",
     "pino": "^6.3.1",
     "pino-pretty": "^4.0.0",
-    "zod": "^1.6.1"
+    "zod": "^1.7.1"
   },
   "devDependencies": {
     "@nuxt/typescript-build": "^0.6.0",
